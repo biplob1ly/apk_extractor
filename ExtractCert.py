@@ -8,7 +8,7 @@ import textwrap
 from OpenSSL.crypto import _lib, _ffi, X509
 from mysql.connector import MySQLConnection, Error
 from mysql_dbconfig import read_db_config
-from zipfile import ZipFile,BadZipFile
+from zipfile import ZipFile, BadZipFile
 from apkutils import APK
 import hashlib
 import sys
@@ -469,17 +469,18 @@ if __name__ == "__main__":
     app_source = "play-store"
 
     # print(get_apk_info("/home/biplob/Documents/apks/com.djxp.troid.apk", "/home/biplob/Documents/TestDir/", "test"))
-
     if app_source == "play-store":
-        apk_names_file = '/home/biplob/Documents/Myworkspace/apksfilenames.txt'
+        apk_names_file = os.path.expanduser('~/Documents/Myworkspace/apksfilenames.txt')
         # '/home/biplob/Documents/TestDir/apk_names.txt'
         # apk_directory = '/home/biplob/Academic/Research/APK_certificate_workspace/apks/'
-        apk_directory = '/home/biplob/Documents/apks/'
-        dest_cert_dir = '/home/biplob/Documents/firmwares/play_apk_certs/'
+        apk_directory = os.path.expanduser('~/Documents/apks/')
+        dest_cert_dir = os.path.expanduser('~/Documents/firmwares/play_apk_certs/')
         collect_play_cert_info(apk_names_file, apk_directory, dest_cert_dir)
     else:
         manufacturer = "Advan"
-        apk_directory = '/home/biplob/Documents/firmwares/apps/Advan/'
-        dest_cert_dir = '/home/biplob/Documents/firmwares/certs/Advan/'
+        apk_directory = os.path.expanduser('~/Documents/firmwares/apps/Advan/')
+        dest_cert_dir = os.path.expanduser('~/Documents/firmwares/certs/Advan/')
         collect_firmware_cert_info(apk_directory, manufacturer, dest_cert_dir)
+
+    #print("Hello ,it works!")
     sys.exit(0)
