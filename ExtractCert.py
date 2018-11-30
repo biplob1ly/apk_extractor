@@ -289,22 +289,26 @@ def extract_cert_from_apk(apk_path, destination, apk_source):
             destination = os.path.join(destination, apk_path_list[-3], apk_path_list[-2])
 
     rsa_file = os.path.join(destination, os.path.splitext(os.path.basename(apk_path))[0] + ".RSA")
-    os.makedirs(os.path.dirname(rsa_file), exist_ok=True)
-    val = -1
-    try:
-        val = call("unzip -p " + apk_path + " *.RSA > " + rsa_file, shell=True)
-        if val == 0:
-            return rsa_file
-        else:
-            raise FileNotFoundError
+    if not os.path.exists(rsa_file):
+        os.makedirs(os.path.dirname(rsa_file), exist_ok=True)
+        val = -1
+        try:
+            print("Unzipping: " + os.path.basename(apk_path))
+            val = call("unzip -p " + apk_path + " *.RSA > " + rsa_file, shell=True)
+            if val != 0:
+                raise FileNotFoundError
 
-    except FileNotFoundError:
+        except FileNotFoundError:
+            print(" Error Code: " + str(val) + "\n")
+
+    if os.path.exists(rsa_file) and (os.path.getsize(rsa_file) > 0):
+        return rsa_file
+    else:
         global log
-        exception = "Problem in file: " + os.path.basename(apk_path) + " Error Code: " + str(val) + "\n"
+        exception = "Problem in file: " + os.path.basename(apk_path) + "\n"
         print(exception)
         log += exception
-
-    return None
+        return None
 
 
 def get_apk_info(apk_path, cert_destination, apk_source):
@@ -349,8 +353,6 @@ def get_apk_names(file_path):
     with open("play_apk_position.txt", "r") as fpos:
         start, count = (int(val) for val in fpos.read().splitlines())
         end = int(start) + int(count)
-        # fpos.seek(0)
-        # fpos.write("%d\n%d" % (end, count))
 
     with open(file_path) as fin:
         apk_names = [line.rstrip() for line in fin.readlines()[start:end]]
@@ -365,6 +367,7 @@ def collect_play_cert_info(apk_names_path, apk_dir, cert_destination):
     db_config = read_db_config()
     db_connection = None
     count = 0
+    global start
     # Loop through each apk file in the apk_dir and collect certificate info
     try:
         print('Connecting to MySQL database...')
@@ -376,12 +379,13 @@ def collect_play_cert_info(apk_names_path, apk_dir, cert_destination):
             for apk_file in apk_names:
                 if apk_file.endswith(".apk"):
                     apk_path = os.path.join(apk_dir, apk_file)
-                    print("Current: %s..." % apk_path)
+                    print(str(start) + " : " + str(count) + " -> " + apk_path)
 
                     apk_dict = get_apk_info(apk_path, cert_destination, "play-store")
                     if apk_dict is not None:
                         insert_cert_info_into_db(db_connection, apk_dict)
                 count = count+1
+                start = start+1
 
         else:
             print('db_connection failed.')
@@ -393,8 +397,6 @@ def collect_play_cert_info(apk_names_path, apk_dir, cert_destination):
         if db_connection is not None:
             db_connection.close()
             print('db_connection closed.')
-            global start
-            start = start+count
             with open("play_apk_position.txt", "w") as fpos:
                 fpos.write("%d\n%d" % (start, count))
             global log
@@ -468,12 +470,15 @@ if __name__ == "__main__":
     if app_source == "play-store":
         apk_names_file = os.path.expanduser('~/Documents/Myworkspace/apksfilenames.txt')
         apk_directory = os.path.expanduser('~/Documents/apks/')
-        dest_cert_dir = os.path.expanduser('~/Documents/firmwares/play_apk_certs/')
+        # dest_cert_dir = os.path.expanduser('~/Documents/firmwares/play_apk_certs/')
+        dest_cert_dir = os.path.expanduser('~/Documents/TestDir/certs/')
         collect_play_cert_info(apk_names_file, apk_directory, dest_cert_dir)
+        # apk_vals = get_apk_info(os.path.join(apk_directory, "com.ativamultimidia.alvoradaestrela.apk"), dest_cert_dir, app_source)
 
     elif app_source == "firmware":
         manufacturer = "Advan"
         apk_directory = '/home/biplob/Documents/firmwares/apps/Advan/'
         dest_cert_dir = '/home/biplob/Documents/firmwares/certs/Advan/'
         collect_firmware_cert_info(apk_directory, manufacturer, dest_cert_dir)
+
     sys.exit(0)
