@@ -8,11 +8,11 @@ import textwrap
 from OpenSSL.crypto import _lib, _ffi, X509
 from mysql.connector import MySQLConnection, Error
 from mysql_dbconfig import read_db_config
-from zipfile import ZipFile, BadZipFile
 from apkutils import APK
 import hashlib
 import sys
 import os
+from subprocess import call
 
 cert_info_query = "insert into apk_info (`pkg_name`,`version_code`,`category`,`rating`,`downloads`,`signature_algorithm`," \
                   "`pub_key_size`,`pub_modulus`,`pub_exponent`,`hash`,`source`, `md5_fingerprint`, `sha1_fingerprint`, " \
@@ -290,17 +290,17 @@ def extract_cert_from_apk(apk_path, destination, apk_source):
 
     rsa_file = os.path.join(destination, os.path.splitext(os.path.basename(apk_path))[0] + ".RSA")
     os.makedirs(os.path.dirname(rsa_file), exist_ok=True)
+    val = -1
     try:
-        apk_zip = ZipFile(apk_path)
-        for file in apk_zip.namelist():
-            if file.endswith(".RSA"):
-                file_data = apk_zip.read(file)
-                with open(rsa_file, "wb") as fout:
-                    fout.write(file_data)
-                return rsa_file
-    except BadZipFile:
+        val = call("unzip -p " + apk_path + " *.RSA > " + rsa_file, shell=True)
+        if val == 0:
+            return rsa_file
+        else:
+            raise FileNotFoundError
+
+    except FileNotFoundError:
         global log
-        exception = "File is not a zip file: " + os.path.basename(apk_path) + "\n"
+        exception = "Problem in file: " + os.path.basename(apk_path) + " Error Code: " + str(val) + "\n"
         print(exception)
         log += exception
 
@@ -311,9 +311,6 @@ def get_apk_info(apk_path, cert_destination, apk_source):
     cert_path = extract_cert_from_apk(apk_path, cert_destination, apk_source)
     global log
     if cert_path is None:
-        exception = "RSA doesn't exist in: " + os.path.basename(apk_path) + "\n"
-        print(exception)
-        log += exception
         return None
 
     apk_dict = parse_cert(cert_path)
@@ -380,6 +377,7 @@ def collect_play_cert_info(apk_names_path, apk_dir, cert_destination):
                 if apk_file.endswith(".apk"):
                     apk_path = os.path.join(apk_dir, apk_file)
                     print("Current: %s..." % apk_path)
+
                     apk_dict = get_apk_info(apk_path, cert_destination, "play-store")
                     if apk_dict is not None:
                         insert_cert_info_into_db(db_connection, apk_dict)
@@ -464,19 +462,16 @@ def collect_firmware_cert_info(apk_dir, manufacturer, cert_destination):
 if __name__ == "__main__":
     # os.chdir(sys.path[0])
     # parse_cert(sys.argv[1])
-    # parse_cert("/home/biplob/Academic/Research/APK_certificate_workspace/apk_cert_extractor/apks/META-INF/CERT.RSA")
 
     app_source = "play-store"
 
-    # print(get_apk_info("/home/biplob/Documents/apks/com.djxp.troid.apk", "/home/biplob/Documents/TestDir/", "test"))
     if app_source == "play-store":
         apk_names_file = os.path.expanduser('~/Documents/Myworkspace/apksfilenames.txt')
-        # '/home/biplob/Documents/TestDir/apk_names.txt'
-        # apk_directory = '/home/biplob/Academic/Research/APK_certificate_workspace/apks/'
         apk_directory = os.path.expanduser('~/Documents/apks/')
         dest_cert_dir = os.path.expanduser('~/Documents/firmwares/play_apk_certs/')
         collect_play_cert_info(apk_names_file, apk_directory, dest_cert_dir)
-    else:
+
+    elif app_source == "firmware":
         manufacturer = "Advan"
         apk_directory = os.path.expanduser('~/Documents/firmwares/apps/Advan/')
         dest_cert_dir = os.path.expanduser('~/Documents/firmwares/certs/Advan/')
