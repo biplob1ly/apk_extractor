@@ -296,6 +296,7 @@ def extract_cert_from_apk(apk_path, destination, apk_source):
             print("Unzipping: " + os.path.basename(apk_path))
             val = call("unzip -p " + apk_path + " *.RSA > " + rsa_file, shell=True)
             if val != 0:
+                call("rm " + rsa_file, shell=True)
                 raise FileNotFoundError
 
         except FileNotFoundError:
@@ -380,7 +381,9 @@ def collect_play_cert_info(apk_names_path, apk_dir, cert_destination):
                 if apk_file.endswith(".apk"):
                     apk_path = os.path.join(apk_dir, apk_file)
                     print(str(start) + " : " + str(count) + " -> " + apk_path)
-
+                    if not os.path.exists(apk_path):
+                        print("Apk path doesn't exist")
+                        break
                     apk_dict = get_apk_info(apk_path, cert_destination, "play-store")
                     if apk_dict is not None:
                         insert_cert_info_into_db(db_connection, apk_dict)
@@ -465,20 +468,21 @@ if __name__ == "__main__":
     # os.chdir(sys.path[0])
     # parse_cert(sys.argv[1])
 
+
     app_source = "play-store"
 
     if app_source == "play-store":
         apk_names_file = os.path.expanduser('~/Documents/Myworkspace/apksfilenames.txt')
         apk_directory = os.path.expanduser('~/Documents/apks/')
-        # dest_cert_dir = os.path.expanduser('~/Documents/firmwares/play_apk_certs/')
-        dest_cert_dir = os.path.expanduser('~/Documents/TestDir/certs/')
+        dest_cert_dir = os.path.expanduser('~/Documents/firmwares/play_apk_certs/')
+        #dest_cert_dir = os.path.expanduser('~/Documents/TestDir/certs/')
         collect_play_cert_info(apk_names_file, apk_directory, dest_cert_dir)
-        # apk_vals = get_apk_info(os.path.join(apk_directory, "com.ativamultimidia.alvoradaestrela.apk"), dest_cert_dir, app_source)
+        #apk_vals = get_apk_info(os.path.join(apk_directory, "com.ativamultimidia.alvoradaestrela.apk"), dest_cert_dir, app_source)
 
     elif app_source == "firmware":
         manufacturer = "Advan"
-        apk_directory = '/home/biplob/Documents/firmwares/apps/Advan/'
-        dest_cert_dir = '/home/biplob/Documents/firmwares/certs/Advan/'
+        apk_directory = os.path.expanduser('~/Documents/firmwares/apps/Advan/')
+        dest_cert_dir = os.path.expanduser('~/Documents/firmwares/certs/Advan/')
         collect_firmware_cert_info(apk_directory, manufacturer, dest_cert_dir)
 
     sys.exit(0)

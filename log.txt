@@ -72,3 +72,68 @@ RSA doesn't exist in: org.kismetllc.icymusic.apk
 RSA doesn't exist in: br.com.hospedandoradios.radiomixfmvrcom.apk
 RSA doesn't exist in: com.eddiehotdock.com.wedding.apk
 
+log starts here.
+RSA doesn't exist in: com.pdagogie.chronoperf.apk
+RSA doesn't exist in: com.zigoapps.build.app552e0632a8d6c.apk
+RSA doesn't exist in: www.tvmsenguntharmatrimony.com.tvmsenguntharmatrimony.apk
+RSA doesn't exist in: fr.pcsoft.wm_mot_de_passe.apk
+RSA doesn't exist in: clover8488.asiangirlsinnature.apk
+
+log starts here.
+RSA doesn't exist in: com.cloud_inside.mobile.glosbedictionary.frla.apk
+RSA doesn't exist in: com.maestroinfotecbiz.www.app5595f67d3f2ea.apk
+RSA doesn't exist in: com.emboabas.apk
+
+log starts here.
+RSA doesn't exist in: akay.yazilim.gazete.apk
+
+log starts here.
+
+log starts here.
+
+log starts here.
+
+log starts here.
+
+log starts here.
+
+log starts here.
+
+log starts here.
+Problem in file: com.ativamultimidia.alvoradaestrela.apk
+
+log starts here.
+
+log starts here.
+
+log starts here.
+
+log starts here.
+Problem in file: educatmex.mivoz.apk
+Problem in file: com.bangla.recipe.bestbdapps.apk
+Problem in file: id.go.pajak.mpajak.apk
+Problem in file: www.paralagames.com.apk
+Problem in file: com.endroidgametech.sniperjunglehunting3d.apk
+Problem in file: com.buagamesoft.puppymemory.apk
+Problem in file: com.tigamedev.bubbleprofessor.apk
+Problem in file: developer.miguel.hsk6ok.apk
+Problem in file: com.rafaelsantanna_leagueofcounter.apk
+Problem in file: com.drunkenwizard.pokeadotter.apk
+Problem in file: com.RadioEspana.apk
+Problem in file: com.freestart.axparisstore.appyli.apk
+Problem in file: com.twistedidentity.jelliesunited.apk
+Problem in file: com.team034.isurvival.utility.apk
+Problem in file: com.bunaapp.matchwordsgame.apk
+Problem in file: com.ninjacoden.freeway.apk
+Problem in file: net.SanFrancisco.imapcity.apk
+Problem in file: com.yoofrivb.frivgames.apk
+Problem in file: com.popartoys.solarchart.apk
+Problem in file: com.freestart.blackmarket2.appyli.apk
+Problem in file: com.wordpress.yumkayes.Bobthebat.apk
+Problem in file: de.Superfreeflappy2newadventure.com.apk
+
+log starts here.
+
+log starts here.
+Problem in file: com.kameha.maker.dragonball.apk
+
