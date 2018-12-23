@@ -121,88 +121,96 @@ def get_certificates(pkcs7):
 
 def parse_cert(cert_file):
     cert_dict = {'cert_file_path': os.path.abspath(cert_file)}
-    with open(cert_file, 'rb+') as f:
-        cert_pem = f.read()
-        f.close()
+    try:
+        with open(cert_file, 'rb+') as f:
+            cert_pem = f.read()
+            f.close()
 
-        pkcs7 = load_pkcs7_data(FILETYPE_ASN1, cert_pem)
-        x509 = get_certificates(pkcs7)[0]
-        # x509 = load_certificate(FILETYPE_PEM, cert_pem)
+            pkcs7 = load_pkcs7_data(FILETYPE_ASN1, cert_pem)
+            x509 = get_certificates(pkcs7)[0]
+            # x509 = load_certificate(FILETYPE_PEM, cert_pem)
 
-        # print("Certificate:")
-        # print("    Data:")
+            # print("Certificate:")
+            # print("    Data:")
 
-        cert_dict['version'] = int(x509.get_version() + 1)
-        # print("        Version: %s (0x%x)" % (cert_dict['version'], x509.get_version()))
+            cert_dict['version'] = int(x509.get_version() + 1)
+            # print("        Version: %s (0x%x)" % (cert_dict['version'], x509.get_version()))
 
-        # print("        Serial Number:")
-        cert_dict['serial_number'] = format_split_int(x509.get_serial_number())
-        # print("            %s" % cert_dict['serial_number'])
+            # print("        Serial Number:")
+            cert_dict['serial_number'] = format_split_int(x509.get_serial_number())
+            # print("            %s" % cert_dict['serial_number'])
 
-        cert_dict['signature_algorithm'] = x509.get_signature_algorithm().decode("utf-8")
-        # print("    Signature Algorithm: %s" % cert_dict['signature_algorithm'])
+            cert_dict['signature_algorithm'] = x509.get_signature_algorithm().decode("utf-8")
+            # print("    Signature Algorithm: %s" % cert_dict['signature_algorithm'])
 
-        issuer = format_subject_issuer(x509.get_issuer(), cert_dict, "issuer")
-        # print("    Issuer: %s" % issuer)
+            issuer = format_subject_issuer(x509.get_issuer(), cert_dict, "issuer")
+            # print("    Issuer: %s" % issuer)
 
-        # print("    Validity")
-        cert_dict['not_before'] = format_asn1_date(x509.get_notBefore())
-        # print("        Not Before: %s" % cert_dict['not_before'])
-        cert_dict['not_after'] = format_asn1_date(x509.get_notAfter())
-        # print("        Not After : %s" % cert_dict['not_after'])
+            # print("    Validity")
+            cert_dict['not_before'] = format_asn1_date(x509.get_notBefore())
+            # print("        Not Before: %s" % cert_dict['not_before'])
+            cert_dict['not_after'] = format_asn1_date(x509.get_notAfter())
+            # print("        Not After : %s" % cert_dict['not_after'])
 
-        subject = format_subject_issuer(x509.get_subject(), cert_dict, "subject")
-        # print("    Subject: %s" % subject)
-        # print("    Subject Public Key Info:")
+            subject = format_subject_issuer(x509.get_subject(), cert_dict, "subject")
+            # print("    Subject: %s" % subject)
+            # print("    Subject Public Key Info:")
 
-        if issuer == subject:
-            cert_dict["dn_type"] = "both"
-        else:
-            cert_dict["dn_type"] = "issuer"
+            if issuer == subject:
+                cert_dict["dn_type"] = "both"
+            else:
+                cert_dict["dn_type"] = "issuer"
 
-        pkey_lines = []
-        keytype = x509.get_pubkey().type()
-        keytype_list = {TYPE_RSA: 'rsaEncryption', TYPE_DSA: 'dsaEncryption', 408: 'id-ecPublicKey'}
-        key_type_str = keytype_list[keytype] if keytype in keytype_list else 'other'
+            pkey_lines = []
+            keytype = x509.get_pubkey().type()
+            keytype_list = {TYPE_RSA: 'rsaEncryption', TYPE_DSA: 'dsaEncryption', 408: 'id-ecPublicKey'}
+            key_type_str = keytype_list[keytype] if keytype in keytype_list else 'other'
 
-        cert_dict['pub_key_algorithm'] = key_type_str
-        pkey_lines.append("        Public Key Algorithm: %s" % key_type_str)
+            cert_dict['pub_key_algorithm'] = key_type_str
+            pkey_lines.append("        Public Key Algorithm: %s" % key_type_str)
 
-        cert_dict['pub_key_size'] = x509.get_pubkey().bits()
-        pkey_lines.append("            Public-Key: (%s bit)" % cert_dict['pub_key_size'])
-        if x509.get_pubkey().type() == TYPE_RSA:
-            modulus, exponent = get_modulus_and_exponent(x509, cert_dict)
-            formatted_modulus = "\n                ".join(textwrap.wrap(modulus, 45))
-            pkey_lines.append("            Modulus:")
-            pkey_lines.append("                %s" % formatted_modulus)
-            pkey_lines.append("            Exponent %d (0x%x)" % (exponent, exponent))
-        # print("\n".join(pkey_lines))
+            cert_dict['pub_key_size'] = x509.get_pubkey().bits()
+            pkey_lines.append("            Public-Key: (%s bit)" % cert_dict['pub_key_size'])
+            if x509.get_pubkey().type() == TYPE_RSA:
+                modulus, exponent = get_modulus_and_exponent(x509, cert_dict)
+                formatted_modulus = "\n                ".join(textwrap.wrap(modulus, 45))
+                pkey_lines.append("            Modulus:")
+                pkey_lines.append("                %s" % formatted_modulus)
+                pkey_lines.append("            Exponent %d (0x%x)" % (exponent, exponent))
+            # print("\n".join(pkey_lines))
 
-        # print("        X509v3 extensions:")
-        for i in range(x509.get_extension_count()):
-            critical = 'critical' if x509.get_extension(i).get_critical() else ''
-            item = x509.get_extension(i).get_short_name().decode("utf-8")
-            val = x509.get_extension(i).__str__()
-            if item == 'subjectKeyIdentifier':
-                cert_dict['subjectKeyIdentifier'] = val
-            # elif item == 'authorityKeyIdentifier':
-            #     cert_dict['authorityKeyIdentifier'] = val
-            # print("             x509v3 %s: %s" % (item, critical))
-            # print("                 %s" % val)
+            # print("        X509v3 extensions:")
+            for i in range(x509.get_extension_count()):
+                critical = 'critical' if x509.get_extension(i).get_critical() else ''
+                item = x509.get_extension(i).get_short_name().decode("utf-8")
+                val = x509.get_extension(i).__str__()
+                if item == 'subjectKeyIdentifier':
+                    cert_dict['subjectKeyIdentifier'] = val
+                # elif item == 'authorityKeyIdentifier':
+                #     cert_dict['authorityKeyIdentifier'] = val
+                # print("             x509v3 %s: %s" % (item, critical))
+                # print("                 %s" % val)
 
-        # print("    Signature Algorithm: %s" % x509.get_signature_algorithm().decode("utf-8"))
-        cert_dict['signature'] = ':'.join(format(x, '02x') for x in get_signature_bytes(x509))
-        sig_formatted = "\n         ".join(textwrap.wrap(cert_dict['signature'], 54))
-        # print("         %s" % sig_formatted)
+            # print("    Signature Algorithm: %s" % x509.get_signature_algorithm().decode("utf-8"))
+            cert_dict['signature'] = ':'.join(format(x, '02x') for x in get_signature_bytes(x509))
+            sig_formatted = "\n         ".join(textwrap.wrap(cert_dict['signature'], 54))
+            # print("         %s" % sig_formatted)
 
-        cert_dict['md5_fingerprint'] = x509.digest('md5').decode("utf-8")
-        # print("    Thumbprint MD5:    %s" % cert_dict['md5_fingerprint'])
-        cert_dict['sha1_fingerprint'] = x509.digest('sha1').decode("utf-8")
-        # print("    Thumbprint SHA1:   %s" % cert_dict['sha1_fingerprint'])
-        cert_dict['sha256_fingerprint'] = x509.digest('sha256').decode("utf-8")
-        # print("    Thumbprint SHA256: %s" % cert_dict['sha256_fingerprint'])
+            cert_dict['md5_fingerprint'] = x509.digest('md5').decode("utf-8")
+            # print("    Thumbprint MD5:    %s" % cert_dict['md5_fingerprint'])
+            cert_dict['sha1_fingerprint'] = x509.digest('sha1').decode("utf-8")
+            # print("    Thumbprint SHA1:   %s" % cert_dict['sha1_fingerprint'])
+            cert_dict['sha256_fingerprint'] = x509.digest('sha256').decode("utf-8")
+            # print("    Thumbprint SHA256: %s" % cert_dict['sha256_fingerprint'])
+        
+        return cert_dict
+    except:
+        excep = "Error in parse cert: " + cert_file + "\n"
+        print(excep)
+        global log
+        log += excep
 
-    return cert_dict
+    return None
 
 
 def insert_cert_info_into_db(db_connection, apk_dict):
@@ -247,8 +255,6 @@ def insert_cert_info_into_db(db_connection, apk_dict):
 def extract_cert_from_apk(apk_path, destination, apk_source):
     if apk_source == "firmware":
         rsa_file = apk_path.replace("/apps/", "/certs/").replace(".apk", ".RSA")
-
-        print(rsa_file)
     else:
         rsa_file = os.path.join(destination, os.path.splitext(os.path.basename(apk_path))[0] + ".RSA")
         if not os.path.exists(rsa_file):
@@ -281,6 +287,8 @@ def get_apk_info(apk_path, cert_destination, apk_source):
         return None
 
     apk_dict = parse_cert(cert_path)
+    if apk_dict is None:
+        return None
     apk_dict["pkg_name"] = ""
     apk_dict["version_code"] = ""
     try:
@@ -293,9 +301,13 @@ def get_apk_info(apk_path, cert_destination, apk_source):
         print(exception)
         log += exception
     except TypeError as tp_error:
-        exception1 = "KeyError for: " + apk_path + "\n" + str(tp_error)
+        exception1 = "TypeError for: " + apk_path + "\n" + str(tp_error)
         print(exception1)
         log += exception1
+    except:
+        exception2 = "Error getting manifest: " + apk_path + "\n"
+        print(exception2)
+        log += exception2
 
     # Open,close, read file and calculate MD5 on its contents
     with open(apk_path, "rb") as apk_to_hash:
