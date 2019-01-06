@@ -464,7 +464,7 @@ if __name__ == "__main__":
         collect_play_cert_info(apk_names_file, apk_directory, dest_cert_dir)
 
     elif app_source == "firmware":
-        apk_names_file = os.path.expanduser('~/Documents/Myworkspace/firmapks.txt')
+        apk_names_file = os.path.expanduser('~/Documents/Myworkspace/firmwareapks.txt')
         dest_cert_dir = os.path.expanduser('~/Documents/firmwares/certs/')
         collect_firmware_cert_info(apk_names_file, dest_cert_dir)
 
