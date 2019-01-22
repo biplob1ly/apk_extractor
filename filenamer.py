@@ -4,6 +4,7 @@ import hashlib
 import os
 import sys
 
+
 idpos_query = "select id,pkg_name,hash from apk_info where file_name is NULL limit 7000"
 fname_insert_query = """update apk_info set file_name = %s where id = %s"""
 start = None
