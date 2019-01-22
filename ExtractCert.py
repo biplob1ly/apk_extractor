@@ -15,7 +15,7 @@ import os
 from subprocess import call
 
 cert_info_query = "insert into apk_info (`pkg_name`,`version_code`,`category`,`rating`,`downloads`,`signature_algorithm`," \
-                  "`pub_key_size`,`pub_modulus`,`pub_exponent`,`hash`,`source`, `md5_fingerprint`, `sha1_fingerprint`, " \
+                  "`pub_key_size`,`pub_modulus`,`pub_exponent`,`hash`,`source`,`md5_fingerprint`,`sha1_fingerprint`, " \
                   "`sha256_fingerprint`) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
 cert_dn_info_query = "insert into cert_dn (`pkg_name`,`dn_type`,`country`,`state`,`locality`," \
@@ -464,7 +464,7 @@ if __name__ == "__main__":
         collect_play_cert_info(apk_names_file, apk_directory, dest_cert_dir)
 
     elif app_source == "firmware":
-        apk_names_file = os.path.expanduser('~/Documents/Myworkspace/firmwareapks.txt')
+        apk_names_file = os.path.expanduser('~/Documents/Myworkspace/newhuaweiapks.txt')
         dest_cert_dir = os.path.expanduser('~/Documents/firmwares/certs/')
         collect_firmware_cert_info(apk_names_file, dest_cert_dir)
 

@@ -4,7 +4,7 @@ import hashlib
 import os
 import sys
 
-idpos_query = "select id,hash from apk_info where file_name is NULL limit 1"
+idpos_query = "select id,pkg_name,hash from apk_info where file_name is NULL limit 7000"
 fname_insert_query = """update apk_info set file_name = %s where id = %s"""
 start = None
 count = None
@@ -40,14 +40,20 @@ def collect_file_name(apk_names_path, apk_dir):
             print(len(apk_names))
             cursor = db_connection.cursor()
             cursor.execute(idpos_query)
-            row = cursor.fetchone()
+            rows = cursor.fetchall()
             i = 0
-            while count > 0:
+            for row in rows:
                 while i < len(apk_names):
                     apk_file = apk_names[i]
+                    print(str(start) +"||"+ str(row[0]))
                     start = start+1
                     i = i+1
                     if apk_file.endswith(".apk"):
+                        if (row[1]+".apk") == apk_file:
+                            print("Name")
+                            cursor.execute(fname_insert_query, (apk_file, row[0]))
+                            db_connection.commit()
+                            break
                         apk_path = os.path.join(apk_dir, apk_file)
                         # Open,close, read file and calculate MD5 on its contents
                         with open(apk_path, "rb") as apk_to_hash:
@@ -55,16 +61,15 @@ def collect_file_name(apk_names_path, apk_dir):
                             data = apk_to_hash.read()
                             # pipe contents of the file through
                             apk_hash = hashlib.md5(data).hexdigest()
-                            print(row[1] + "  fdf  " + apk_hash)
-                        if row[1] == apk_hash:
+                        if row[2] == apk_hash:
+                            print("hash")
                             cursor.execute(fname_insert_query, (apk_file, row[0]))
                             db_connection.commit()
                             break
-                count = count - 1
-                cursor.execute(idpos_query)
-                row = cursor.fetchone()
-                if row is None:
-                    print("Npne")
+                
+                #cursor.execute(idpos_query)
+                #row = cursor.fetchone()
+                if row is None or i >= len(apk_names):
                     break
 
         else:
